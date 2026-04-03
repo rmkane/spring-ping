@@ -1,0 +1,14 @@
+# Logs
+logs/
+
+# Maven
+target/
+
+# VSCode
+.vscode/
+
+# IntelliJ
+.idea/
+
+# macOS
+.DS_Store

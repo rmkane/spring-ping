@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  jackson:
+    serialization:
+      indent-output: true
+
+# When the request includes trigger-request-header, response-header is set to the same value.
+app:
+  security:
+    trigger-request-header: X-Echo-Request
+    response-header: X-Echo-Response
+    # Optional: extra header names to obfuscate ([REDACTED]) in logs and /api/debug/headers.
+    # Built-ins always apply (Authorization, Cookie, Set-Cookie, X-Api-Key, …).
+    # obfuscated-header-names:
+    #   - X-Custom-Secret
+
+logging:
+  file:
+    path: logs
+  level:
+    org.acme.ping: INFO
+    org.acme.security: DEBUG
