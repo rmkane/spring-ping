@@ -42,7 +42,7 @@ public class LogFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (!log.isInfoEnabled()) {
+        if (!log.isDebugEnabled()) {
             filterChain.doFilter(request, response);
             return;
         }
