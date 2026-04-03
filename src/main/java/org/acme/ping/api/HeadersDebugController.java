@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.acme.ping.http.HttpHeaderMaps;
@@ -35,15 +37,16 @@ public class HeadersDebugController {
     public ResponseEntity<HeadersDump> dump(HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("X-Debug-Echo", "1");
 
+        // responseStatus / responseHeaders are placeholders; HeadersDebugResponseFinalizeFilter
+        // rewrites the JSON body after the full chain so they match the final response (curl -i).
         HeadersDump body = new HeadersDump(
                 request.getMethod(),
                 request.getRequestURI(),
-                request.getQueryString() != null ? request.getQueryString() : "",
+                Objects.requireNonNullElse(request.getQueryString(), ""),
                 HttpHeaderObfuscation.obfuscateValues(
                         HttpHeaderMaps.fromRequest(request), appSecurity.obfuscatedHeaderNames()),
-                response.getStatus(),
-                HttpHeaderObfuscation.obfuscateValues(
-                        HttpHeaderMaps.fromResponse(response), appSecurity.obfuscatedHeaderNames()));
+                0,
+                Map.of());
 
         log.debug("Headers dump {} {}", request.getMethod(), request.getRequestURI());
         return ResponseEntity.ok(body);

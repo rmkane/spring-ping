@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-curl \
+curl -v \
     -H "Accept: application/json" \
     -H "Authorization: Bearer test" \
     -H "X-Forwarded-For: 127.0.0.1" \
