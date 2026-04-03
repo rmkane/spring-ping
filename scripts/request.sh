@@ -10,6 +10,7 @@ if [[ -z "${DEBUG_HEADERS_ACCESS_TOKEN:-}" ]]; then
   exit 1
 fi
 
+# X-Forwarded-For: compare curl -v (to LB) vs JSON requestHeaders (after LB) to see if the LB strips/forwards it.
 curl -v \
     -H "Accept: application/json" \
     -H "Authorization: Bearer test" \

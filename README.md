@@ -14,6 +14,10 @@ Spring Boot sample with a **debug headers** endpoint for inspecting HTTP exchang
 
 So you can confirm which headers the server actually saw on the way in, and which it sent on the way out (similar spirit to `curl -v`, but structured).
 
+A common use case is **verifying what a load balancer or ingress forwards**: send `X-Forwarded-For`, `X-Forwarded-Proto`, `X-Forwarded-Host`, or custom tracing headers to the LB, then call this endpoint **through the same path** and inspect `requestHeaders`. If a header disappears between your client and this JSON, something **in front of the JVM** (LB, proxy, WAF) removed or replaced it.
+
+This endpoint does **not** drop request header names. It lists what the servlet container exposes on `HttpServletRequest`, and only **replaces values** with `[REDACTED]` for sensitive names (built-ins such as `Authorization`, plus `app.security.obfuscated-header-names` and the debug token header when configured). Anything else—including `X-Forwarded-For` by default—is shown as received.
+
 ### Why a servlet filter rewrites the JSON
 
 The controller builds a first draft of the body with placeholder `responseStatus` and empty `responseHeaders`, because at controller time the response is not finished yet. **`HeadersDebugResponseFinalizeFilter`** wraps the response, lets the full Spring MVC chain run, then parses the cached JSON and **patches** `responseStatus` and `responseHeaders` to match the **final** response (after filters, error handling, etc.). That keeps the payload aligned with what the client receives.
