@@ -1,4 +1,5 @@
-# Ping API — common tasks (requires Maven + JDK 21 on PATH)
+# Ping API — common tasks (requires Maven + JDK 21 on PATH).
+# With jenv: this repo has .java-version (21); enable `eval "$(jenv init -)"` so cd picks JDK 21.
 MVN ?= mvn
 SCRIPTS := ./scripts
 # Matches <artifactId> and <version> in pom.xml; update if those change
