@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 
@@ -41,8 +43,8 @@ public class HeadersDebugController {
             String requestUri,
             String queryString,
             Map<String, List<String>> requestHeaders,
-            int responseStatus,
-            Map<String, List<String>> responseHeaders) {
+            @JsonProperty(HeadersDebugJsonFields.RESPONSE_STATUS) int responseStatus,
+            @JsonProperty(HeadersDebugJsonFields.RESPONSE_HEADERS) Map<String, List<String>> responseHeaders) {
     }
 
     @RequestMapping(path = "headers", produces = MediaType.APPLICATION_JSON_VALUE)

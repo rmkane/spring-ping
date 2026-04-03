@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.RequiredArgsConstructor;
 
+import org.acme.ping.api.HeadersDebugJsonFields;
 import org.acme.ping.http.HttpHeaderMaps;
 import org.acme.ping.http.HttpHeaderObfuscation;
 import org.acme.security.properties.AppSecurityProperties;
@@ -53,7 +54,7 @@ public class HeadersDebugResponseFinalizeFilter implements Filter {
         var httpRequest = Objects.requireNonNull((HttpServletRequest) request, "request");
         var httpResponse = Objects.requireNonNull((HttpServletResponse) response, "response");
 
-        if (!PATH.equals(httpRequest.getServletPath())) {
+        if (!isHeadersDebugHeadersRequest(httpRequest)) {
             chain.doFilter(request, response);
             return;
         }
@@ -75,12 +76,12 @@ public class HeadersDebugResponseFinalizeFilter implements Filter {
             }
             ObjectNode obj = (ObjectNode) root;
             obj.set(
-                    "responseHeaders",
+                    HeadersDebugJsonFields.RESPONSE_HEADERS,
                     objectMapper.valueToTree(
                             HttpHeaderObfuscation.obfuscateValues(
                                     HttpHeaderMaps.fromResponse(caching),
                                     appSecurity.namesForObfuscation())));
-            obj.put("responseStatus", caching.getStatus());
+            obj.put(HeadersDebugJsonFields.RESPONSE_STATUS, caching.getStatus());
 
             byte[] out = objectMapper.writeValueAsBytes(root);
             replayResponse(httpResponse, caching, out);
@@ -131,5 +132,21 @@ public class HeadersDebugResponseFinalizeFilter implements Filter {
 
     private static boolean skipHeaderOnReplay(String name) {
         return SKIP_ON_REPLAY.contains(name.toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Match {@value #PATH} by servlet path (containers) and by request URI (MockMvc
+     * often leaves servlet path empty).
+     */
+    private static boolean isHeadersDebugHeadersRequest(HttpServletRequest request) {
+        if (PATH.equals(request.getServletPath())) {
+            return true;
+        }
+        String uri = request.getRequestURI();
+        String context = request.getContextPath();
+        if (context != null && !context.isEmpty() && uri.startsWith(context)) {
+            uri = uri.substring(context.length());
+        }
+        return PATH.equals(uri);
     }
 }

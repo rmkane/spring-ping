@@ -82,6 +82,14 @@ curl -sS -H "Accept: application/json" -H "X-Debug-Token: $DEBUG_HEADERS_ACCESS_
   http://localhost:8080/api/debug/headers
 ```
 
+## Build and CI
+
+- **JDK 21** is required; `maven-enforcer-plugin` fails the build on older JDKs during `validate`.
+- **`mvn -B verify`** or **`make verify`**: Spotless (format/imports), tests, and packaging—the same command [GitHub Actions](.github/workflows/ci.yml) runs.
+- **`make lint`** / **`make format`**: Spotless check or apply only.
+
+[Dependabot](.github/dependabot.yml) proposes weekly updates for Maven dependencies and GitHub Actions.
+
 ## Production note
 
 Treat **`DEBUG_HEADERS_ACCESS_TOKEN`** like any other secret: strong random value, stored in a secret manager, and **omit or leave empty** in environments where `/api/debug/**` should not be reachable.

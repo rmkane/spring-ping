@@ -21,8 +21,8 @@ format: ## Apply Spotless (Eclipse formatter.xml + import order)
 test: ## Run unit tests
 	$(MVN) test
 
-verify: ## Spotless check + tests (Maven verify)
-	$(MVN) verify
+verify: ## Spotless check + tests (Maven verify; matches CI batch mode)
+	$(MVN) -B verify
 
 package: ## Build Spring Boot executable JAR (skip tests)
 	$(MVN) -q -DskipTests package

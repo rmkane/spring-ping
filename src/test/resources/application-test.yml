@@ -1,0 +1,4 @@
+# Test profile: fixed debug token so MockMvc can call /api/debug/headers.
+app:
+  security:
+    debug-headers-access-token: test-secret
