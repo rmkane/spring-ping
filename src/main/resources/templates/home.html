@@ -1,13 +1,28 @@
-<html>
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
     <head>
+        <meta charset="UTF-8" />
         <title>Home</title>
     </head>
     <body>
         <h1>Home</h1>
         <p>This is a simple home page.</p>
+        <h2>Endpoints</h2>
+        <dl>
+            <dt>GET <a th:href="@{/api/ping}">/api/ping</a></dt>
+            <dd>Returns a simple JSON <code>pong</code> message.</dd>
+            <dt>GET <a th:href="@{/api/debug/headers}">/api/debug/headers</a></dt>
+            <dd>
+                Request/response header dump (JSON). One secret (<code>DEBUG_HEADERS_ACCESS_TOKEN</code>): put it in
+                header <code>X-Debug-Token</code>, or if you omit the header, in query <code>?debug-token=…</code> (same
+                value either way). Query is handy in the browser but leaks more easily — prefer the header. Without a
+                valid value, you get 403.
+            </dd>
+        </dl>
+        <h2>API docs</h2>
         <ul>
-            <li><a href="/api/ping">GET /api/ping</a></li>
-            <li><a href="/api/debug/headers">GET /api/debug/headers</a></li>
+            <li><a th:href="@{/swagger-ui/index.html}">Swagger UI</a></li>
+            <li><a th:href="@{/v3/api-docs}">OpenAPI document (JSON)</a></li>
         </ul>
     </body>
 </html>

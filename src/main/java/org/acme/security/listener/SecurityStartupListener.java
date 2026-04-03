@@ -1,12 +1,13 @@
 package org.acme.security.listener;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.acme.security.properties.AppSecurityProperties;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
 /**
  * Logs a snapshot of security header configuration at application startup.
@@ -21,9 +22,12 @@ public class SecurityStartupListener {
     @EventListener(ApplicationReadyEvent.class)
     public void logAtStartup() {
         log.debug(
-                "AppSecurityProperties: triggerRequestHeader={}, responseHeader={}, obfuscatedHeaderNames={}",
+                "AppSecurityProperties: triggerRequestHeader={}, responseHeader={}, debugHeadersTokenHeader={}, debugHeadersTokenQueryParam={}, debugHeadersAccessConfigured={}, obfuscatedHeaderNameCount={}",
                 appSecurityProperties.triggerRequestHeader(),
                 appSecurityProperties.responseHeader(),
-                appSecurityProperties.obfuscatedHeaderNames());
+                appSecurityProperties.debugHeadersTokenHeader(),
+                appSecurityProperties.debugHeadersTokenQueryParam(),
+                appSecurityProperties.debugHeadersAccessConfigured(),
+                appSecurityProperties.namesForObfuscation().size());
     }
 }

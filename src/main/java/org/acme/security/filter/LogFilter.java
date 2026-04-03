@@ -1,25 +1,31 @@
 package org.acme.security.filter;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.acme.ping.http.HttpHeaderMaps;
-import org.acme.ping.http.HttpHeaderObfuscation;
-import org.acme.security.properties.AppSecurityProperties;
+
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.acme.ping.http.HttpHeaderMaps;
+import org.acme.ping.http.HttpHeaderObfuscation;
+import org.acme.ping.http.SensitiveQueryRedaction;
+import org.acme.security.properties.AppSecurityProperties;
+
 /**
- * Logs each exchange as two events (curl {@code -v}-style): first {@code >} request line and
- * headers, then after the chain {@code <} status line and response headers. Sensitive header values
- * are obfuscated per {@link AppSecurityProperties#obfuscatedHeaderNames()}.
+ * Logs each exchange as two events (curl {@code -v}-style): first {@code >}
+ * request line and headers, then after the chain {@code <} status line and
+ * response headers. Sensitive header values are obfuscated per
+ * {@link AppSecurityProperties#namesForObfuscation()}.
  */
 @Slf4j
 @Component
@@ -35,8 +41,7 @@ public class LogFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-        ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         if (!log.isInfoEnabled()) {
             filterChain.doFilter(request, response);
             return;
@@ -55,7 +60,12 @@ public class LogFilter extends OncePerRequestFilter {
                 .append(request.getRequestURI());
         String query = request.getQueryString();
         if (query != null) {
-            sb.append("?").append(query);
+            sb.append("?")
+                    .append(
+                            appSecurity.debugHeadersAccessConfigured()
+                                    ? SensitiveQueryRedaction.redactQueryParameter(
+                                            query, appSecurity.debugHeadersTokenQueryParam())
+                                    : query);
         }
         sb.append(" ")
                 .append(request.getProtocol())
@@ -64,7 +74,7 @@ public class LogFilter extends OncePerRequestFilter {
                 sb,
                 REQUEST_PREFIX,
                 HttpHeaderObfuscation.obfuscateValues(
-                        HttpHeaderMaps.fromRequest(request), appSecurity.obfuscatedHeaderNames()));
+                        HttpHeaderMaps.fromRequest(request), appSecurity.namesForObfuscation()));
         return sb.toString().stripTrailing();
     }
 
@@ -81,7 +91,7 @@ public class LogFilter extends OncePerRequestFilter {
                 sb,
                 RESPONSE_PREFIX,
                 HttpHeaderObfuscation.obfuscateValues(
-                        HttpHeaderMaps.fromResponse(response), appSecurity.obfuscatedHeaderNames()));
+                        HttpHeaderMaps.fromResponse(response), appSecurity.namesForObfuscation()));
         return sb.toString().stripTrailing();
     }
 

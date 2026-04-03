@@ -6,11 +6,23 @@ spring:
     serialization:
       indent-output: true
 
+springdoc:
+  swagger-ui:
+    # Keep Authorize values (debug token) across page reloads in the browser.
+    persistAuthorization: true
+
 # When the request includes trigger-request-header, response-header is set to the same value.
 app:
   security:
     trigger-request-header: X-Echo-Request
     response-header: X-Echo-Response
+    debug-headers-token-header: X-Debug-Token
+    # Name of query param whose value must equal debug-headers-access-token (same string as the header).
+    # Prefer the header — query URLs leak more easily (history, referrers, access logs).
+    debug-headers-token-query-param: debug-token
+    # One secret for /api/debug/** : X-Debug-Token header and/or ?debug-token=…
+    # Load from shell: source scripts/source-env.sh  (see .env.example) or ./scripts/dev-server.sh
+    debug-headers-access-token: ${DEBUG_HEADERS_ACCESS_TOKEN:}
     # Optional: extra header names to obfuscate ([REDACTED]) in logs and /api/debug/headers.
     # Built-ins always apply (Authorization, Cookie, Set-Cookie, X-Api-Key, …).
     # obfuscated-header-names:

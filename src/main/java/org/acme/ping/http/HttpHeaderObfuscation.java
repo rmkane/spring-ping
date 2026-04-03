@@ -9,12 +9,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Copies header maps for safe logging: sensitive names stay visible, values are replaced with a
- * placeholder.
+ * Copies header maps for safe logging: sensitive names stay visible, values are
+ * replaced with a placeholder.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class HttpHeaderObfuscation {
@@ -34,10 +35,10 @@ public final class HttpHeaderObfuscation {
             "X-CSRF-TOKEN");
 
     /**
-     * Returns a new map with the same keys and order; values for headers whose names match
-     * {@code namesToObfuscate} (case-insensitive) are replaced with {@link #PLACEHOLDER}. The
-     * built-in {@link #DEFAULT_OBFUSCATED_HEADER_NAMES} always applies; extra names from config are
-     * added on top.
+     * Returns a new map with the same keys and order; values for headers whose
+     * names match {@code namesToObfuscate} (case-insensitive) are replaced with
+     * {@link #PLACEHOLDER}. The built-in {@link #DEFAULT_OBFUSCATED_HEADER_NAMES}
+     * always applies; extra names from config are added on top.
      */
     public static SortedMap<String, List<String>> obfuscateValues(
             SortedMap<String, List<String>> headers, Collection<String> namesToObfuscate) {

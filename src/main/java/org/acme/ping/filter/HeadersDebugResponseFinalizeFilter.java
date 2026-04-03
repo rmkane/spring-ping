@@ -1,8 +1,13 @@
 package org.acme.ping.filter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,41 +15,41 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Locale;
-import java.util.Set;
-import lombok.RequiredArgsConstructor;
-import org.acme.ping.http.HttpHeaderMaps;
-import org.acme.ping.http.HttpHeaderObfuscation;
-import org.acme.security.properties.AppSecurityProperties;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import lombok.RequiredArgsConstructor;
+
+import org.acme.ping.http.HttpHeaderMaps;
+import org.acme.ping.http.HttpHeaderObfuscation;
+import org.acme.security.properties.AppSecurityProperties;
+
 /**
- * Runs immediately before the dispatcher (low order) so after the MVC chain the cached JSON body
- * can be updated with the final {@code responseHeaders} / {@code responseStatus} (what the client
- * actually receives), matching {@code curl -i} and {@link org.acme.security.filter.LogFilter}.
+ * Runs immediately before the dispatcher (low order) so after the MVC chain the
+ * cached JSON body can be updated with the final {@code responseHeaders} /
+ * {@code responseStatus} (what the client actually receives), matching
+ * {@code curl -i} and {@link org.acme.security.filter.LogFilter}.
  */
 @RequiredArgsConstructor
 public class HeadersDebugResponseFinalizeFilter implements Filter {
 
     private static final String PATH = "/api/debug/headers";
-    private static final Set<String> SKIP_ON_REPLAY =
-            Set.of("content-length", "content-type", "transfer-encoding", "trailer", "trailers");
+    private static final Set<String> SKIP_ON_REPLAY = Set.of("content-length", "content-type", "transfer-encoding",
+            "trailer", "trailers");
 
     private final ObjectMapper objectMapper;
     private final AppSecurityProperties appSecurity;
 
     @Override
     public void doFilter(
-        ServletRequest request,
-        ServletResponse response,
-        FilterChain chain
-    ) throws IOException, ServletException {
+            ServletRequest request,
+            ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
         var httpRequest = Objects.requireNonNull((HttpServletRequest) request, "request");
         var httpResponse = Objects.requireNonNull((HttpServletResponse) response, "response");
 
@@ -74,7 +79,7 @@ public class HeadersDebugResponseFinalizeFilter implements Filter {
                     objectMapper.valueToTree(
                             HttpHeaderObfuscation.obfuscateValues(
                                     HttpHeaderMaps.fromResponse(caching),
-                                    appSecurity.obfuscatedHeaderNames())));
+                                    appSecurity.namesForObfuscation())));
             obj.put("responseStatus", caching.getStatus());
 
             byte[] out = objectMapper.writeValueAsBytes(root);
@@ -85,11 +90,11 @@ public class HeadersDebugResponseFinalizeFilter implements Filter {
     }
 
     private void replayResponse(
-        HttpServletResponse rawResponse,
-        ContentCachingResponseWrapper caching,
-        byte[] jsonBody
-    ) throws IOException {
-        // Snapshot before reset(): the wrapper delegates to rawResponse, so reset() clears headers
+            HttpServletResponse rawResponse,
+            ContentCachingResponseWrapper caching,
+            byte[] jsonBody) throws IOException {
+        // Snapshot before reset(): the wrapper delegates to rawResponse, so reset()
+        // clears headers
         // we would otherwise read from caching.getHeaderNames().
         List<HeaderToReplay> headersToReplay = new ArrayList<>();
         for (String name : caching.getHeaderNames()) {
@@ -121,7 +126,8 @@ public class HeadersDebugResponseFinalizeFilter implements Filter {
         rawResponse.getOutputStream().flush();
     }
 
-    private record HeaderToReplay(String name, String value) {}
+    private record HeaderToReplay(String name, String value) {
+    }
 
     private static boolean skipHeaderOnReplay(String name) {
         return SKIP_ON_REPLAY.contains(name.toLowerCase(Locale.ROOT));

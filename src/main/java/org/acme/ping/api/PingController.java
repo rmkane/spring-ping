@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(path = "/api/ping", produces = MediaType.APPLICATION_JSON_VALUE)
 public class PingController {
-    
-    record PingResponse(String message) {}
-    
+
+    record PingResponse(String message) {
+    }
+
     @GetMapping
     public ResponseEntity<PingResponse> ping() {
         return ResponseEntity.ok(new PingResponse("pong"));
